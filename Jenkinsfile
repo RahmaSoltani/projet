@@ -1,58 +1,96 @@
 pipeline {
     agent any
+
+    environment {
+        MAVEN_REPO_URL = 'https://mymavenrepo.com/repo/wfeEoJVTqyCrSb3fpohC/'
+        MAVEN_USER = 'myMavenRepo'
+        MAVEN_PASSWORD = '12345678'
+    }
+
     stages {
+        // Test Stage
         stage('Test') {
             steps {
-                echo 'Running tests...'
-                sh './gradlew test' // Run unit tests
-                junit 'build/test-results/**/*.xml' // Archive test results
-                cucumber build 'build/cucumber-reports/' // Generate Cucumber reports
+                script {
+                    // Run unit tests
+                    sh './gradlew test'
+                }
+            }
+            post {
+                always {
+                    // Archive test results
+                    junit '**/build/test-*.xml'
+                    cucumber '**/build/reports/cucumber/*.json'
+                }
             }
         }
+
+        // Code Analysis Stage
         stage('Code Analysis') {
             steps {
-                echo 'Analyzing code quality...'
-                sh './gradlew sonarqube' // Run SonarQube analysis
+                script {
+                    // Run SonarQube analysis
+                    sh './gradlew sonarqube'
+                }
             }
         }
+
+        // Quality Gates Stage
         stage('Code Quality') {
             steps {
-                echo 'Checking Quality Gates...'
                 script {
-                    def qg = waitForQualityGate() // Check Quality Gate status
-                    if (qg.status != 'OK') {
-                        error "Pipeline aborted due to quality gate failure: ${qg.status}"
+                    // Check SonarQube Quality Gate status
+                    def qualityGate = waitForQualityGate()
+                    if (qualityGate.status != 'OK') {
+                        error "Quality gate failed: ${qualityGate.status}"
                     }
                 }
             }
         }
+
+        // Build Stage
         stage('Build') {
             steps {
-                echo 'Building project...'
-                sh './gradlew build' // Build project JAR
-                archiveArtifacts artifacts: 'build/libs/*.jar' // Archive JAR
+                script {
+                    // Build the jar and documentation
+                    sh './gradlew build'
+                }
+            }
+            post {
+                always {
+                    // Archive jar and documentation
+                    archiveArtifacts artifacts: '**/build/libs/*.jar, **/build/docs/**/*.html', allowEmptyArchive: true
+                }
             }
         }
+
+        // Deploy Stage
         stage('Deploy') {
             steps {
-                echo 'Deploying artifact...'
-                sh './gradlew publish' // Deploy JAR to MyMavenRepo
+                script {
+                    // Deploy to Maven repository
+                    sh './gradlew publish'
+                }
             }
         }
+
+        // Notification Stage
         stage('Notification') {
             steps {
-                echo 'Sending notifications...'
-                mail to: 'team@example.com',
-                     subject: "Build Success",
-                     body: "The pipeline executed successfully!"
+                script {
+                    // Send success notifications to Slack and Email
+                    slackSend channel: '#devops', message: "Build and deployment successful for version ${env.VERSION}"
+                    emailext subject: "Deployment Successful", body: "Your build was successfully deployed!", to: 'lr_soltani@esi.dz'
+                }
             }
         }
     }
+
     post {
         failure {
-            mail to: 'team@example.com',
-                 subject: "Build Failure",
-                 body: "The pipeline failed during execution."
+            // In case of failure, notify failure
+            slackSend channel: '#devops', message: "Build failed for version ${env.VERSION}"
+            emailext subject: "Build Failed", body: "Your build failed.", to: 'your-email@example.com'
         }
     }
 }
