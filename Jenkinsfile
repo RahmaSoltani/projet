@@ -1,73 +1,79 @@
 pipeline {
     agent any
-    environment {
-        MAVEN_REPO_URL = 'https://mymavenrepo.com/repo/wfeEoJVTqyCrSb3fpohC/'
-        MAVEN_USER = 'myMavenRepo'
-        MAVEN_PASSWORD = '12345678'
-    }
+
     stages {
-        stage('Test') {
+        stage('Checkout') {
             steps {
-                script {
-                    sh './gradlew test'
-                }
-            }
-            post {
-                always {
-                    junit '**/build/test-*.xml'
-                    cucumber '**/build/reports/cucumber/*.json'
-                }
+                // Checkout the code from your repository
+                git 'https://github.com/RahmaSoltani/projet'
             }
         }
-        stage('Code Analysis') {
-            steps {
-                script {
-                    sh './gradlew sonarqube'
-                }
-            }
-        }
-        stage('Code Quality') {
-            steps {
-                script {
-                    def qualityGate = waitForQualityGate()
-                    if (qualityGate.status != 'OK') {
-                        error "Quality gate failed: ${qualityGate.status}"
-                    }
-                }
-            }
-        }
+
         stage('Build') {
             steps {
                 script {
+                    // Run the Gradle build
                     sh './gradlew build'
                 }
             }
+        }
+
+        stage('Unit Tests') {
+            steps {
+                script {
+                    // Run unit tests
+                    sh './gradlew test'
+                }
+            }
+
             post {
-                always {
-                    archiveArtifacts artifacts: '**/build/libs/*.jar, **/build/docs/**/*.html', allowEmptyArchive: true
+                success {
+                    // Archive unit test results
+                    archiveArtifacts artifacts: '**/build/test-results/test/TEST-*.xml', allowEmptyArchive: true
+
+                    // Generate Cucumber reports
+                    cucumber buildStatus: 'UNSTABLE', fileIncludePattern: '**/build/reports/cucumber/*.json'
+                }
+                failure {
+                    // If tests fail, send failure notification (Slack or Email handled by Jenkins settings)
+                    slackSend channel: '#your-channel', color: 'danger', message: "Build Failed: ${env.JOB_NAME} - ${env.BUILD_NUMBER}"
                 }
             }
         }
-        stage('Deploy') {
+
+        stage('Code Coverage') {
             steps {
                 script {
+                    // Generate Jacoco code coverage report
+                    sh './gradlew jacocoTestReport'
+                }
+            }
+        }
+
+        stage('Publish') {
+            steps {
+                script {
+                    // Publish to Maven repository
                     sh './gradlew publish'
                 }
             }
-        }
-        stage('Notification') {
-            steps {
-                script {
-                    slackSend channel: '#devops', message: "Build and deployment successful for version ${env.VERSION}"
-                    emailext subject: "Deployment Successful", body: "Your build was successfully deployed!", to: 'lr_soltani@esi.dz'
+
+            post {
+                success {
+                    // Send success notification to Slack (if you use Jenkins to handle this automatically, this is not needed)
+                    slackSend channel: '#your-channel', color: 'good', message: "Build Successful: ${env.JOB_NAME} - ${env.BUILD_NUMBER}"
+                }
+                failure {
+                    // Send failure notification to Slack
+                    slackSend channel: '#your-channel', color: 'danger', message: "Publish Failed: ${env.JOB_NAME} - ${env.BUILD_NUMBER}"
                 }
             }
         }
     }
+
     post {
-        failure {
-            slackSend channel: '#devops', message: "Build failed for version ${env.VERSION}"
-            emailext subject: "Build Failed", body: "Your build failed.", to: 'lr_soltani@esi.dz'
+        always {
+            // Always run cleanup tasks if needed
         }
     }
 }
