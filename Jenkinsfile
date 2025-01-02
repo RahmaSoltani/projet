@@ -1,5 +1,5 @@
 pipeline {
-    agent any
+    agent any  // Use any available agent
 
     stages {
         stage('Checkout') {
@@ -25,20 +25,6 @@ pipeline {
                     sh './gradlew test'
                 }
             }
-
-            post {
-                success {
-                    // Archive unit test results
-                    archiveArtifacts artifacts: '**/build/test-results/test/TEST-*.xml', allowEmptyArchive: true
-
-                    // Generate Cucumber reports
-                    cucumber buildStatus: 'UNSTABLE', fileIncludePattern: '**/build/reports/cucumber/*.json'
-                }
-                failure {
-                    // If tests fail, send failure notification (Slack or Email handled by Jenkins settings)
-                    slackSend channel: '#your-channel', color: 'danger', message: "Build Failed: ${env.JOB_NAME} - ${env.BUILD_NUMBER}"
-                }
-            }
         }
 
         stage('Code Coverage') {
@@ -49,31 +35,22 @@ pipeline {
                 }
             }
         }
-
-        stage('Publish') {
-            steps {
-                script {
-                    // Publish to Maven repository
-                    sh './gradlew publish'
-                }
-            }
-
-            post {
-                success {
-                    // Send success notification to Slack (if you use Jenkins to handle this automatically, this is not needed)
-                    slackSend channel: '#your-channel', color: 'good', message: "Build Successful: ${env.JOB_NAME} - ${env.BUILD_NUMBER}"
-                }
-                failure {
-                    // Send failure notification to Slack
-                    slackSend channel: '#your-channel', color: 'danger', message: "Publish Failed: ${env.JOB_NAME} - ${env.BUILD_NUMBER}"
-                }
-            }
-        }
     }
 
     post {
         always {
-            // Always run cleanup tasks if needed
+            // Clean up workspace or take any actions after pipeline execution
+            cleanWs()
+        }
+
+        success {
+            // Actions for a successful pipeline
+            echo 'Pipeline succeeded!'
+        }
+
+        failure {
+            // Actions for a failed pipeline
+            echo 'Pipeline failed!'
         }
     }
 }
