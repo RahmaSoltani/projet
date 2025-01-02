@@ -1,37 +1,85 @@
 pipeline {
-    agent any  // Use any available agent
+    agent any
+
+    environment {
+        SONAR_HOST_URL = 'http://197.140.142.82:9000'
+    }
 
     stages {
         stage('Checkout') {
             steps {
-                // Checkout the code from your repository
-                git 'https://github.com/RahmaSoltani/projet'
+                git branch: 'main', url: 'https://github.com/RahmaSoltani/projet'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                echo 'Running unit tests...'
+                script {
+                    try {
+                        bat './gradlew test'
+                        junit '**/build/test-results/test/*.xml'
+                    } catch (Exception e) {
+                        echo "Test stage failed: ${e.message}"
+                        currentBuild.result = 'FAILURE'
+                        error("Test stage failed")
+                    }
+                }
+            }
+        }
+
+        stage('Code Analysis') {
+            steps {
+                echo 'Running SonarQube analysis...'
+                script {
+                    try {
+                        bat "./gradlew sonarqube -Dsonar.host.url=${SONAR_HOST_URL}"
+                    } catch (Exception e) {
+                        echo "SonarQube analysis failed: ${e.message}"
+                        currentBuild.result = 'FAILURE'
+                        error("SonarQube analysis failed")
+                    }
+                }
             }
         }
 
         stage('Build') {
             steps {
+                echo 'Building the project...'
                 script {
-                    // Run the Gradle build
-                    sh './gradlew build'
+                    try {
+                        bat './gradlew build'
+                        archiveArtifacts artifacts: 'build/libs/*.jar', fingerprint: true
+                    } catch (Exception e) {
+                        echo "Build stage failed: ${e.message}"
+                        currentBuild.result = 'FAILURE'
+                        error("Build stage failed")
+                    }
                 }
             }
         }
 
-        stage('Unit Tests') {
+        stage('Deploy') {
             steps {
-                script {
-                    // Run unit tests
-                    sh './gradlew test'
-                }
+                echo 'Deploying to MyMavenRepo...'
+                bat "./gradlew publish"
             }
         }
 
-        stage('Code Coverage') {
+        stage('Send Notification') {
             steps {
                 script {
-                    // Generate Jacoco code coverage report
-                    sh './gradlew jacocoTestReport'
+                    def result = currentBuild.result ?: 'SUCCESS'
+                    echo result
+                    if (result == 'SUCCESS') {
+                        mail to: 'lr_soltani@esi.dz',
+                             subject: "Jenkins Build #${env.BUILD_NUMBER} Success",
+                             body: "The build #${env.BUILD_NUMBER} was successful.\n\nCheck it out: ${env.BUILD_URL}"
+                    } else {
+                        mail to: 'lr_soltani@esi.dz',
+                             subject: "Jenkins Build #${env.BUILD_NUMBER} Failure",
+                             body: "The build #${env.BUILD_NUMBER} failed.\n\nCheck it out: ${env.BUILD_URL}"
+                    }
                 }
             }
         }
@@ -39,17 +87,14 @@ pipeline {
 
     post {
         always {
-            // Clean up workspace or take any actions after pipeline execution
-            cleanWs()
+            echo 'Pipeline execution finished.'
         }
 
         success {
-            // Actions for a successful pipeline
             echo 'Pipeline succeeded!'
         }
 
         failure {
-            // Actions for a failed pipeline
             echo 'Pipeline failed!'
         }
     }
