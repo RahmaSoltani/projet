@@ -1,11 +1,11 @@
 plugins {
     id 'java'
-    id "jacoco"
-    id "com.github.spacialcircumstances.gradle-cucumber-reporting" version "0.1.25"
-    id "org.sonarqube" version "4.4.0.3356"
-    id "maven-publish"
-    id "io.github.oleksiiparf.slack-webhook" version "1.0.0"
-    id "de.zebrajaeger.sendMail" version "0.2.2"
+    id("jacoco")
+    id("com.github.spacialcircumstances.gradle-cucumber-reporting") version "0.1.25"
+    id("org.sonarqube") version "4.4.0.3356"
+    id ("maven-publish")
+    id("io.github.oleksiiparf.slack-webhook") version "1.0.0"
+    id("de.zebrajaeger.sendMail") version "0.2.2"
 }
 
 group = 'com.example'
@@ -22,8 +22,10 @@ dependencies {
     implementation "org.aspectj:aspectjrt:1.9.21.1"
     implementation 'jakarta.mail:jakarta.mail-api:2.0.1'
     implementation 'com.sun.mail:jakarta.mail:2.0.1'
-}
 
+
+
+}
 cucumberReports {
     outputDir = file('build/reports/cucumber')
     buildId = '0'
@@ -31,12 +33,18 @@ cucumberReports {
 }
 
 test {
-    finalizedBy jacocoTestReport, 'sonar'
+    finalizedBy "jacocoTestReport",'sonar'
+
 }
+apply plugin: 'maven-publish'
+
+group = 'com.example'
+version = '0.1'
 
 publishing {
     repositories {
         maven {
+
             url 'https://mymavenrepo.com/repo/wfeEoJVTqyCrSb3fpohC/'
             credentials {
                 username 'myMavenRepo'
@@ -44,13 +52,13 @@ publishing {
             }
         }
     }
+
     publications {
         maven(MavenPublication) {
             from components.java
         }
     }
 }
-
 slack {
     publishedPlugin {
         webHook = "https://hooks.slack.com/services/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"
@@ -96,6 +104,7 @@ slack {
             }
         }
     }
+
 }
 
 import jakarta.mail.Session
@@ -106,6 +115,7 @@ import jakarta.mail.MessagingException
 import jakarta.mail.Transport
 import jakarta.mail.internet.MimeMessage
 import jakarta.mail.internet.InternetAddress
+
 
 task sendMailCustom {
     doLast {
@@ -152,21 +162,13 @@ task sendMailCustom {
     }
 }
 
-sendMailCustom.mustRunAfter publish
-postPublishedPluginToSlack.mustRunAfter publish
-
+sendMailCustom.mustRunAfter(publish)
+postPublishedPluginToSlack.mustRunAfter(publish)
 publish {
-    finalizedBy "postPublishedPluginToSlack", "sendMailCustom"
-}
+    finalizedBy "postPublishedPluginToSlack","sendMailCustom"
 
+}
 tasks.named('publish').configure {
-    finalizedBy 'test'
+    finalizedBy('test')
 }
 
-sonar {
-    properties {
-        property "sonar.projectKey", "com.example:ID"
-        property "sonar.projectName", "projet"
-        property "sonar.host.url", "http://localhost:9000"  // Adjust SonarQube URL
-    }
-}
