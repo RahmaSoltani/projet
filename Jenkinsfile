@@ -1,17 +1,12 @@
 pipeline {
     agent any
-    environment {
-        MYMAVENREPO_USER = credentials('repoUser')
-        MYMAVENREPO_PASS = credentials('repoPassword')
-        SLACK_WEBHOOK_URL = credentials('slackWebhook')
-        PATH = "C:\\gradle-8.8-bin\\gradle-8.8\\bin;${env.PATH}"
-    }
     stages {
-        stage('Test') {
+        stage('Build') {
             steps {
-                echo 'Running unit tests...'
-                bat 'gradle -v'
+                script {
+                    bat 'gradle -v'  // Use 'bat' for Windows
+                }
             }
         }
-
+    }
 }
