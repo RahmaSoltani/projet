@@ -63,7 +63,6 @@ pipeline {
                 mail to: 'lr_soltani@esi.dz',
                      subject: 'Pipeline Successful',
                      body: 'The pipeline completed successfully.'
-                slackSend channel: '#dev-team', message: 'Pipeline completed successfully!'
             }
         }
     }
@@ -74,7 +73,6 @@ pipeline {
             mail to: 'lr_soltani@esi.dz',
                  subject: 'Pipeline Failed',
                  body: 'The pipeline failed. Check Jenkins for details.'
-            slackSend channel: '#dev-team', message: 'Pipeline failed. Please check logs!'
         }
     }
 }
