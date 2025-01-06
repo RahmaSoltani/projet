@@ -1,11 +1,15 @@
+import jakarta.mail.MessagingException
+import jakarta.mail.internet.InternetAddress
+import jakarta.mail.internet.MimeMessage
+
 plugins {
     id 'java'
-    id "jacoco"
-    id "com.github.spacialcircumstances.gradle-cucumber-reporting" version "0.1.25"
-    id "org.sonarqube" version "4.4.0.3356"
-    id "maven-publish"
-    id "io.github.oleksiiparf.slack-webhook" version "1.0.0"
-    id "de.zebrajaeger.sendMail" version "0.2.2"
+    id 'jacoco'
+    id 'com.github.spacialcircumstances.gradle-cucumber-reporting' version '0.1.25'
+    id 'org.sonarqube' version '4.4.0.3356'
+    id 'maven-publish'
+    id 'io.github.oleksiiparf.slack-webhook' version '1.0.0'
+    id 'de.zebrajaeger.sendMail' version '0.2.2'
 }
 
 group = 'com.example'
@@ -19,7 +23,7 @@ dependencies {
     testImplementation 'io.cucumber:cucumber-java:6.0.0'
     testImplementation 'io.cucumber:cucumber-junit:6.0.0'
     testImplementation 'junit:junit:4.12'
-    implementation "org.aspectj:aspectjrt:1.9.21.1"
+    implementation 'org.aspectj:aspectjrt:1.9.21.1'
     implementation 'jakarta.mail:jakarta.mail-api:2.0.1'
     implementation 'com.sun.mail:jakarta.mail:2.0.1'
 }
@@ -31,7 +35,7 @@ cucumberReports {
 }
 
 test {
-    finalizedBy jacocoTestReport
+    finalizedBy 'jacocoTestReport', 'sonar'
 }
 
 publishing {
@@ -39,8 +43,8 @@ publishing {
         maven {
             url 'https://mymavenrepo.com/repo/wfeEoJVTqyCrSb3fpohC/'
             credentials {
-                username 'myMavenRepo'
-                password '12345678'
+                username = System.getenv('MYMAVENREPO_USER')
+                password = System.getenv('MYMAVENREPO_PASS')
             }
         }
     }
@@ -52,45 +56,18 @@ publishing {
 }
 
 slack {
-    publishedPlugin {
-        webHook = "https://hooks.slack.com/services/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"
-        attachment {
-            fallback = "New version successfully published."
-            pretext = "New version successfully published."
-            color = "good"
-            field {
-                title = "Module"
-                value = project.name
-                shortValue = true
-            }
-            field {
-                title = "Version"
-                value = project.version
-                shortValue = true
-            }
-        }
-        attachment {
-            fallback = "Another line on sent together."
-            pretext = "Another line on sent together."
-            color = "good"
-            field {
-                title = "Something"
-                value = "Something text"
-            }
-        }
-    }
     buildSuccessful {
-        webHook = "https://hooks.slack.com/services/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"
+        webHook = System.getenv('SLACK_WEBHOOK_URL')
         attachment {
-            fallback = "Project successfully built."
-            pretext = "Project successfully built."
+            fallback = 'Project successfully built.'
+            pretext = 'Project successfully built.'
             field {
-                title = "Module"
+                title = 'Module'
                 value = project.name
                 shortValue = true
             }
             field {
-                title = "Version"
+                title = 'Version'
                 value = project.version
                 shortValue = true
             }
@@ -98,36 +75,23 @@ slack {
     }
 }
 
-import jakarta.mail.Session
-import jakarta.mail.Authenticator
-import jakarta.mail.PasswordAuthentication
-import jakarta.mail.Message
-import jakarta.mail.MessagingException
-import jakarta.mail.Transport
-import jakarta.mail.internet.MimeMessage
-import jakarta.mail.internet.InternetAddress
-
 task sendMailCustom {
     doLast {
-        // Configuration du serveur SMTP
-        String smtpHost = "smtp.gmail.com"
-        int smtpPort = 587
-        String username = "lo_kaba@esi.dz"
-        String password = "msvh ybei sfjf jjlb"
-
-        // Paramètres de l'email
-        String fromEmail = "lo_kaba@esi.dz"
-        String toEmail = "lr_soltani@esi.dz"
-        String emailSubject = "Notification Mail"
-        String emailBody = "Hello!! this is the last update"
+        def smtpHost = 'smtp.gmail.com'
+        def smtpPort = 587
+        def username = System.getenv('SMTP_USERNAME')
+        def password = System.getenv('SMTP_PASSWORD')
+        def fromEmail = 'lo_kaba@esi.dz'
+        def toEmail = 'lr_soltani@esi.dz'
+        def emailSubject = 'Notification Mail'
+        def emailBody = 'Hello!! this is the last update.'
 
         Properties props = new Properties()
-        props.put("mail.smtp.auth", "true")
-        props.put("mail.smtp.starttls.enable", "true")
-        props.put("mail.smtp.host", smtpHost)
-        props.put("mail.smtp.port", smtpPort)
+        props.put('mail.smtp.auth', 'true')
+        props.put('mail.smtp.starttls.enable', 'true')
+        props.put('mail.smtp.host', smtpHost)
+        props.put('mail.smtp.port', smtpPort)
 
-        // Authentification et création de session
         Session session = Session.getInstance(props, new Authenticator() {
             @Override
             protected PasswordAuthentication getPasswordAuthentication() {
@@ -136,37 +100,16 @@ task sendMailCustom {
         })
 
         try {
-            // Création et envoi du message
             MimeMessage message = new MimeMessage(session)
             message.setFrom(new InternetAddress(fromEmail))
             message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(toEmail))
             message.setSubject(emailSubject)
             message.setText(emailBody)
-
             Transport.send(message)
-            println("Email envoyé avec succès à : $toEmail")
+            println("Email sent successfully to: $toEmail")
         } catch (MessagingException e) {
             e.printStackTrace()
-            println("Échec de l'envoi de l'email : ${e.message}")
+            println("Failed to send email: ${e.message}")
         }
-    }
-}
-
-sendMailCustom.mustRunAfter publish
-postPublishedPluginToSlack.mustRunAfter publish
-
-publish {
-    finalizedBy "postPublishedPluginToSlack", "sendMailCustom"
-}
-
-tasks.named('publish').configure {
-    finalizedBy 'test'
-}
-
-sonar {
-    properties {
-        property "sonar.projectKey", "com.example:ID"
-        property "sonar.projectName", "projet"
-        property "sonar.host.url", "http://localhost:9000"  // Adjust SonarQube URL
     }
 }
