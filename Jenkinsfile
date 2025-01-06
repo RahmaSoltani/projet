@@ -1,19 +1,34 @@
 pipeline {
     agent any
+
     environment {
-        // Append the Gradle bin directory to the existing PATH
         PATH = "C:\\gradle-8.8-bin\\gradle-8.8\\bin;${env.PATH}"
+        SONARQUBE = 'SonarQube'
+        MAVEN_REPO = 'https://mymavenrepo.com/repo/wfeEoJVTqyCrSb3fpohC/'
+        MAVEN_USER = 'myMavenRepo'
+        MAVEN_PASSWORD = '12345678'
+        EMAIL_RECIPIENT = 'lr_soltani@esi.dz'
+        SLACK_WEBHOOK_URL = 'https://hooks.slack.com/services/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'
     }
+
     stages {
+        // Test phase
         stage('Test') {
             steps {
-                echo 'Running unit tests...'
-                bat "gradle -v"
+                script {
+                    // Run unit tests using Gradle
+                    bat 'gradle test'
+
+                    // Archive test result artifacts
+                    archiveArtifacts artifacts: '**/build/test-logs/*.xml', allowEmptyArchive: true
+
+                    // Run cucumber reports generation
+                    bat 'gradle cucumberReports'
+
+                    // Archive cucumber report artifacts
+                    archiveArtifacts artifacts: 'build/reports/cucumber/example-report.json', allowEmptyArchive: true
+                }
             }
         }
-
-
-
-
     }
 }
