@@ -1,19 +1,19 @@
 pipeline {
     agent any
-
     environment {
-        PATH = "C:\\gradle-8.8-bin\\gradle-8.8\\bin;${env.PATH}"
+        // Append the Gradle bin directory to the existing PATH
     }
-
     stages {
-        stage('Test') {
+        stage('Publish') {
             steps {
-                echo 'Running Unit Tests...'
-                bat 'gradle -v'
+                script {
+                    bat 'gradle publish'  // This will use Gradle from the added path
+                }
             }
         }
 
 
 
 
+    }
 }
