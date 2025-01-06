@@ -53,6 +53,8 @@ publishing {
     }
 }
 
+
+
 slack {
     publishedPlugin {
         webHook = "https://hooks.slack.com/services/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"
