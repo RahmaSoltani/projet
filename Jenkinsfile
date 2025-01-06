@@ -2,42 +2,36 @@ pipeline {
     agent any
 
     environment {
-        SONAR_HOST_URL = 'http://197.140.142.82:9000'
+        MYMAVENREPO_USER = credentials('repoUser') // Replace with Jenkins credential ID
+        MYMAVENREPO_PASS = credentials('repoPassword') // Replace with Jenkins credential ID
     }
 
     stages {
-        stage('Checkout') {
-            steps {
-                git branch: 'main', url: 'https://github.com/RahmaSoltani/projet'
-            }
-        }
-
         stage('Test') {
             steps {
                 echo 'Running unit tests...'
-                script {
-                    try {
-                        bat './gradlew test'
-                        junit '**/build/test-results/test/*.xml'
-                    } catch (Exception e) {
-                        echo "Test stage failed: ${e.message}"
-                        currentBuild.result = 'FAILURE'
-                        error("Test stage failed")
-                    }
-                }
+                sh './gradlew test' // Run unit tests
+                junit '**/build/test-results/**/*.xml' // Archive test results
+                cucumber 'build/reports/cucumber/*.json' // Generate Cucumber reports
             }
         }
 
         stage('Code Analysis') {
             steps {
-                echo 'Running SonarQube analysis...'
+                echo 'Analyzing code quality with SonarQube...'
+                withSonarQubeEnv('SonarQube') { // Replace 'SonarQube' with your server configuration name
+                    sh './gradlew sonarqube'
+                }
+            }
+        }
+
+        stage('Code Quality') {
+            steps {
+                echo 'Checking SonarQube Quality Gates...'
                 script {
-                    try {
-                        bat "./gradlew sonarqube -Dsonar.host.url=${SONAR_HOST_URL}"
-                    } catch (Exception e) {
-                        echo "SonarQube analysis failed: ${e.message}"
-                        currentBuild.result = 'FAILURE'
-                        error("SonarQube analysis failed")
+                    def qualityGate = waitForQualityGate()
+                    if (qualityGate.status != 'OK') {
+                        error "Pipeline aborted due to Quality Gate failure: ${qualityGate.status}"
                     }
                 }
             }
@@ -46,56 +40,41 @@ pipeline {
         stage('Build') {
             steps {
                 echo 'Building the project...'
-                script {
-                    try {
-                        bat './gradlew build'
-                        archiveArtifacts artifacts: 'build/libs/*.jar', fingerprint: true
-                    } catch (Exception e) {
-                        echo "Build stage failed: ${e.message}"
-                        currentBuild.result = 'FAILURE'
-                        error("Build stage failed")
-                    }
-                }
+                sh './gradlew build' // Build and generate the JAR
+                sh './gradlew javadoc' // Generate documentation
+                archiveArtifacts artifacts: '**/*.jar, **/build/docs/**/*', fingerprint: true
             }
         }
 
         stage('Deploy') {
             steps {
                 echo 'Deploying to MyMavenRepo...'
-                bat "./gradlew publish"
+                sh """
+                ./gradlew publish \
+                -Dmymavenrepo.user=$MYMAVENREPO_USER \
+                -Dmymavenrepo.password=$MYMAVENREPO_PASS
+                """
             }
         }
 
-        stage('Send Notification') {
+        stage('Notification') {
             steps {
-                script {
-                    def result = currentBuild.result ?: 'SUCCESS'
-                    echo result
-                    if (result == 'SUCCESS') {
-                        mail to: 'lr_soltani@esi.dz',
-                             subject: "Jenkins Build #${env.BUILD_NUMBER} Success",
-                             body: "The build #${env.BUILD_NUMBER} was successful.\n\nCheck it out: ${env.BUILD_URL}"
-                    } else {
-                        mail to: 'lr_soltani@esi.dz',
-                             subject: "Jenkins Build #${env.BUILD_NUMBER} Failure",
-                             body: "The build #${env.BUILD_NUMBER} failed.\n\nCheck it out: ${env.BUILD_URL}"
-                    }
-                }
+                echo 'Sending success notifications...'
+                mail to: 'lr_soltani@esi.dz',
+                     subject: 'Pipeline Successful',
+                     body: 'The pipeline completed successfully.'
+                slackSend channel: '#dev-team', message: 'Pipeline completed successfully!'
             }
         }
     }
 
     post {
-        always {
-            echo 'Pipeline execution finished.'
-        }
-
-        success {
-            echo 'Pipeline succeeded!'
-        }
-
         failure {
-            echo 'Pipeline failed!'
+            echo 'Pipeline failed. Sending failure notifications...'
+            mail to: 'lr_soltani@esi.dz',
+                 subject: 'Pipeline Failed',
+                 body: 'The pipeline failed. Check Jenkins for details.'
+            slackSend channel: '#dev-team', message: 'Pipeline failed. Please check logs!'
         }
     }
 }
