@@ -1,4 +1,12 @@
-
+plugins {
+    id 'java'
+    id("jacoco")
+    id("com.github.spacialcircumstances.gradle-cucumber-reporting") version "0.1.25"
+    id("org.sonarqube") version "4.4.0.3356"
+    id ("maven-publish")
+    id("io.github.oleksiiparf.slack-webhook") version "1.0.0"
+    id("de.zebrajaeger.sendMail") version "0.2.2"
+}
 
 group = 'com.example'
 version = '1.0'
@@ -53,7 +61,7 @@ publishing {
 }
 slack {
     publishedPlugin {
-        webHook = "https://hooks.slack.com/services/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"
+        webHook = "https://hooks.slack.com/services/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"
         attachment {
             fallback = "New version successfully published."
             pretext = "New version successfully published."
@@ -80,7 +88,7 @@ slack {
         }
     }
     buildSuccessful {
-        webHook = "https://hooks.slack.com/services/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"
+        webHook = "https://hooks.slack.com/services/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"
         attachment {
             fallback = "Project successfully built."
             pretext = "Project successfully built."
@@ -154,9 +162,10 @@ task sendMailCustom {
     }
 }
 
+sendMailCustom.mustRunAfter(publish)
 postPublishedPluginToSlack.mustRunAfter(publish)
 publish {
-    finalizedBy "sendMailCustom"
+    finalizedBy "postPublishedPluginToSlack","sendMailCustom"
 
 }
 tasks.named('publish').configure {
