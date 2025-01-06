@@ -1,16 +1,65 @@
 pipeline {
     agent any
     environment {
-        // Append the Gradle bin directory to the existing PATH
+        MYMAVENREPO_USER = credentials('repoUser')
+        MYMAVENREPO_PASS = credentials('repoPassword')
+        SLACK_WEBHOOK_URL = credentials('slackWebhook')
         PATH = "C:\\gradle-8.8-bin\\gradle-8.8\\bin;${env.PATH}"
     }
     stages {
-        stage('Check Gradle Version') {
+        stage('Test') {
             steps {
-                script {
-                    bat 'gradle build'  // This will use Gradle from the added path
+                echo 'Running unit tests...'
+                bat './gradlew test'
+                junit '**/build/test-results/**/*.xml'
+                cucumber 'build/reports/cucumber/*.json'
+            }
+        }
+        stage('Code Analysis') {
+            steps {
+                withSonarQubeEnv('SonarQube') {
+                    bat './gradlew sonarqube'
                 }
             }
+        }
+        stage('Code Quality') {
+            steps {
+                script {
+                    def qualityGate = waitForQualityGate()
+                    if (qualityGate.status != 'OK') {
+                        error "Pipeline aborted due to Quality Gate failure: ${qualityGate.status}"
+                    }
+                }
+            }
+        }
+        stage('Build') {
+            steps {
+                bat './gradlew build'
+                archiveArtifacts artifacts: '**/*.jar, **/build/docs/**/*', fingerprint: true
+            }
+        }
+        stage('Deploy') {
+            steps {
+                bat "./gradlew publish -Dmymavenrepo.user=$MYMAVENREPO_USER -Dmymavenrepo.password=$MYMAVENREPO_PASS"
+            }
+        }
+        stage('Notification') {
+            steps {
+                mail to: 'lr_soltani@esi.dz',
+                     subject: 'Pipeline Successful',
+                     body: 'The pipeline completed successfully.'
+
+                // Slack notification for success
+            }
+        }
+    }
+    post {
+        failure {
+            mail to: 'lr_soltani@esi.dz',
+                 subject: 'Pipeline Failed',
+                 body: 'The pipeline failed. Check Jenkins for details.'
+
+            // Slack notification for failure
         }
     }
 }
