@@ -9,7 +9,7 @@ pipeline {
         stage('Test') {
             steps {
                 echo 'Running Unit Tests...'
-                bat 'gradle test'
+                bat 'gradle -v'
             }
         }
 
