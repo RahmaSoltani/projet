@@ -5,11 +5,11 @@ pipeline {
         PATH = "C:\\gradle-8.8-bin\\gradle-8.8\\bin;${env.PATH}"
     }
     stages {
-        stage('Publish') {
+        stage('Test') {
             steps {
-                script {
-                    bat 'gradle -v'  // This will use Gradle from the added path
-                }
+                echo 'Running unit tests...'
+                bat "gradle test"
+                junit '**/build/test-results/test/*.xml' // Archive test results
             }
         }
 
