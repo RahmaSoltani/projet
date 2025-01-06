@@ -5,12 +5,13 @@ pipeline {
         PATH = "C:\\gradle-8.8-bin\\gradle-8.8\\bin;${env.PATH}"
     }
     stages {
-        stage('Check Gradle Version') {
+        stage('Publish') {
             steps {
                 script {
-                    bat 'gradle test'  // This will use Gradle from the added path
+                    bat 'gradle publish'  // This will use Gradle from the added path
                 }
             }
         }
+
     }
 }

@@ -22,8 +22,10 @@ dependencies {
     implementation "org.aspectj:aspectjrt:1.9.21.1"
     implementation 'jakarta.mail:jakarta.mail-api:2.0.1'
     implementation 'com.sun.mail:jakarta.mail:2.0.1'
-}
 
+
+
+}
 cucumberReports {
     outputDir = file('build/reports/cucumber')
     buildId = '0'
@@ -31,13 +33,18 @@ cucumberReports {
 }
 
 test {
-    finalizedBy "jacocoTestReport", 'sonar'
-}
+    finalizedBy "jacocoTestReport",'sonar'
 
-// Publishing to Maven Repository
+}
+apply plugin: 'maven-publish'
+
+group = 'com.example'
+version = '0.1'
+
 publishing {
     repositories {
         maven {
+
             url 'https://mymavenrepo.com/repo/wfeEoJVTqyCrSb3fpohC/'
             credentials {
                 username 'myMavenRepo'
@@ -47,17 +54,14 @@ publishing {
     }
 
     publications {
-        mavenJava(MavenPublication) {
+        maven(MavenPublication) {
             from components.java
         }
     }
 }
-
-
-
 slack {
     publishedPlugin {
-        webHook = "https://hooks.slack.com/services/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"
+        webHook = "https://hooks.slack.com/services/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"
         attachment {
             fallback = "New version successfully published."
             pretext = "New version successfully published."
@@ -73,10 +77,18 @@ slack {
                 shortValue = true
             }
         }
+        attachment {
+            fallback = "Another line on sent together."
+            pretext = "Another line on sent together."
+            color = "good"
+            field {
+                title = "Something"
+                value = "Something text"
+            }
+        }
     }
-
     buildSuccessful {
-        webHook = "https://hooks.slack.com/services/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"
+        webHook = "https://hooks.slack.com/services/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"
         attachment {
             fallback = "Project successfully built."
             pretext = "Project successfully built."
@@ -92,67 +104,71 @@ slack {
             }
         }
     }
+
 }
+
+import jakarta.mail.Session
+import jakarta.mail.Authenticator
+import jakarta.mail.PasswordAuthentication
+import jakarta.mail.Message
+import jakarta.mail.MessagingException
+import jakarta.mail.Transport
+import jakarta.mail.internet.MimeMessage
+import jakarta.mail.internet.InternetAddress
+
 
 task sendMailCustom {
     doLast {
-        // SMTP configuration...
-    }
-}
+        // Configuration du serveur SMTP
+        String smtpHost = "smtp.gmail.com"
+        int smtpPort = 587
+        String username = "lo_kaba@esi.dz"
+        String password = "msvh ybei sfjf jjlb"
 
-// Rename the postPublishedPluginToSlack task to a unique name
-task sendSlackNotification {
-    doLast {
-        // Slack webhook URL
-        def slackWebhookUrl = "https://hooks.slack.com/services/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"
+        // Paramètres de l'email
+        String fromEmail = "lo_kaba@esi.dz"
+        String toEmail = "lr_soltani@esi.dz"
+        String emailSubject = "Notification Mail"
+        String emailBody = "Hello!! this is the last update"
 
-        // Prepare the Slack message payload
-        def payload = """{
-            "text": "New version successfully published!",
-            "attachments": [
-                {
-                    "fallback": "New version successfully published.",
-                    "pretext": "New version successfully published.",
-                    "color": "good",
-                    "fields": [
-                        {
-                            "title": "Module",
-                            "value": "${project.name}",
-                            "short": true
-                        },
-                        {
-                            "title": "Version",
-                            "value": "${project.version}",
-                            "short": true
-                        }
-                    ]
-                }
-            ]
-        }"""
+        Properties props = new Properties()
+        props.put("mail.smtp.auth", "true")
+        props.put("mail.smtp.starttls.enable", "true")
+        props.put("mail.smtp.host", smtpHost)
+        props.put("mail.smtp.port", smtpPort)
 
-        // Send the HTTP request to Slack
-        def url = new URL(slackWebhookUrl)
-        def connection = url.openConnection()
-        connection.setRequestMethod('POST')
-        connection.setRequestProperty('Content-Type', 'application/json')
-        connection.setDoOutput(true)
-        connection.getOutputStream().write(payload.getBytes("UTF-8"))
+        // Authentification et création de session
+        Session session = Session.getInstance(props, new Authenticator() {
+            @Override
+            protected PasswordAuthentication getPasswordAuthentication() {
+                return new PasswordAuthentication(username, password)
+            }
+        })
 
-        // Get the response from Slack
-        def responseCode = connection.getResponseCode()
-        if (responseCode == 200) {
-            println("Slack notification sent successfully!")
-        } else {
-            println("Failed to send Slack notification. Response code: $responseCode")
+        try {
+            // Création et envoi du message
+            MimeMessage message = new MimeMessage(session)
+            message.setFrom(new InternetAddress(fromEmail))
+            message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(toEmail))
+            message.setSubject(emailSubject)
+            message.setText(emailBody)
+
+            Transport.send(message)
+            println("Email envoyé avec succès à : $toEmail")
+        } catch (MessagingException e) {
+            e.printStackTrace()
+            println("Échec de l'envoi de l'email : ${e.message}")
         }
     }
 }
 
-// Correcting the execution order of tasks
+sendMailCustom.mustRunAfter(publish)
+postPublishedPluginToSlack.mustRunAfter(publish)
 publish {
-    finalizedBy 'sendSlackNotification'
+    finalizedBy "postPublishedPluginToSlack","sendMailCustom"
+
+}
+tasks.named('publish').configure {
+    finalizedBy('test')
 }
 
-tasks.named('publish').configure {
-    finalizedBy 'sendMailCustom'
-}
