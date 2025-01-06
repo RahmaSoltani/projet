@@ -2,11 +2,7 @@ pipeline {
     agent any
 
     environment {
-            PATH = "C:\\gradle-8.8-bin\\gradle-8.8\\bin;${env.PATH}"
-
-        REPO_URL = "https://mymavenrepo.com/repo/wfeEoJVTqyCrSb3fpohC/"
-        REPO_USER = "myMavenRepo"
-        REPO_PASSWORD = "12345678"
+        PATH = "C:\\gradle-8.8-bin\\gradle-8.8\\bin;${env.PATH}"
     }
 
     stages {
