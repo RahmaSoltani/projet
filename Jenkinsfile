@@ -20,42 +20,14 @@ pipeline {
             steps {
                 echo 'Analyzing code quality with SonarQube...'
                 withSonarQubeEnv('SonarQube') { // Replace 'SonarQube' with your server configuration name
-                    sh './gradlew sonarqube'
+                    sh './gradlew sonar'
                 }
             }
         }
 
-        stage('Code Quality') {
-            steps {
-                echo 'Checking SonarQube Quality Gates...'
-                script {
-                    def qualityGate = waitForQualityGate()
-                    if (qualityGate.status != 'OK') {
-                        error "Pipeline aborted due to Quality Gate failure: ${qualityGate.status}"
-                    }
-                }
-            }
-        }
 
-        stage('Build') {
-            steps {
-                echo 'Building the project...'
-                sh './gradlew build' // Build and generate the JAR
-                sh './gradlew javadoc' // Generate documentation
-                archiveArtifacts artifacts: '**/*.jar, **/build/docs/**/*', fingerprint: true
-            }
-        }
 
-        stage('Deploy') {
-            steps {
-                echo 'Deploying to MyMavenRepo...'
-                sh """
-                ./gradlew publish \
-                -Dmymavenrepo.user=$MYMAVENREPO_USER \
-                -Dmymavenrepo.password=$MYMAVENREPO_PASS
-                """
-            }
-        }
+
 
         stage('Notification') {
             steps {

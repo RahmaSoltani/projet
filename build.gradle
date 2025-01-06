@@ -31,7 +31,7 @@ cucumberReports {
 }
 
 test {
-    finalizedBy jacocoTestReport, 'sonar'
+    finalizedBy jacocoTestReport
 }
 
 publishing {
