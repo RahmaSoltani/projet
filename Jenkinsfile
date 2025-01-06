@@ -10,7 +10,7 @@ pipeline {
         stage('Test') {
             steps {
                 echo 'Running unit tests...'
-                sh 'gradle test'
+                bat 'gradle test'
                 junit '**/build/test-results/**/*.xml'
                 cucumber 'build/reports/cucumber/*.json'
             }
