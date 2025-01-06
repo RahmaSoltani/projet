@@ -10,56 +10,10 @@ pipeline {
         stage('Test') {
             steps {
                 echo 'Running unit tests...'
-                bat './gradlew test'
+                bat 'gradle test'
                 junit '**/build/test-results/**/*.xml'
                 cucumber 'build/reports/cucumber/*.json'
             }
         }
-        stage('Code Analysis') {
-            steps {
-                withSonarQubeEnv('SonarQube') {
-                    bat './gradlew sonarqube'
-                }
-            }
-        }
-        stage('Code Quality') {
-            steps {
-                script {
-                    def qualityGate = waitForQualityGate()
-                    if (qualityGate.status != 'OK') {
-                        error "Pipeline aborted due to Quality Gate failure: ${qualityGate.status}"
-                    }
-                }
-            }
-        }
-        stage('Build') {
-            steps {
-                bat './gradlew build'
-                archiveArtifacts artifacts: '**/*.jar, **/build/docs/**/*', fingerprint: true
-            }
-        }
-        stage('Deploy') {
-            steps {
-                bat "./gradlew publish -Dmymavenrepo.user=$MYMAVENREPO_USER -Dmymavenrepo.password=$MYMAVENREPO_PASS"
-            }
-        }
-        stage('Notification') {
-            steps {
-                mail to: 'lr_soltani@esi.dz',
-                     subject: 'Pipeline Successful',
-                     body: 'The pipeline completed successfully.'
-
-                // Slack notification for success
-            }
-        }
-    }
-    post {
-        failure {
-            mail to: 'lr_soltani@esi.dz',
-                 subject: 'Pipeline Failed',
-                 body: 'The pipeline failed. Check Jenkins for details.'
-
-            // Slack notification for failure
-        }
-    }
+      
 }
