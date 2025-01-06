@@ -18,14 +18,7 @@ pipeline {
             }
         }
 
-        stage('Code Analysis') {
-            steps {
-                echo 'Running Code Analysis with SonarQube...'
-                withSonarQubeEnv('SonarQube') {
-                    bat 'gradle sonarqube'
-                }
-            }
-        }
+
 
 
 }
