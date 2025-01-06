@@ -14,7 +14,6 @@ pipeline {
             steps {
                 echo 'Running Unit Tests...'
                 bat 'gradle test'
-                junit '**/build/test-results/test/*.xml'
             }
         }
 
