@@ -4,10 +4,9 @@ pipeline {
         stage('Build') {
             steps {
                 script {
-                    sh 'gradle build'
+                    bat 'gradle build'  // Use 'bat' for Windows
                 }
             }
         }
     }
 }
-
