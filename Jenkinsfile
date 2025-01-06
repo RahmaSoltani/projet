@@ -8,7 +8,7 @@ pipeline {
         stage('Check Gradle Version') {
             steps {
                 script {
-                    bat 'gradle -v'  // This will use Gradle from the added path
+                    bat 'gradle build'  // This will use Gradle from the added path
                 }
             }
         }
