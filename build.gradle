@@ -162,7 +162,7 @@ task sendMailCustom {
     }
 }
 
-sendMailCustom.mustRunAfter(publish)
+postPublishedPluginToSlack.mustRunAfter(publish)
 publish {
     finalizedBy "sendMailCustom"
 
