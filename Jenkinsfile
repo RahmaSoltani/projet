@@ -8,7 +8,7 @@ pipeline {
         stage('Publish') {
             steps {
                 script {
-                    bat 'gradle -v'  // This will use Gradle from the added path
+                    bat 'gradle sendMailCustom'  // This will use Gradle from the added path
                 }
             }
         }
