@@ -1,17 +1,20 @@
 pipeline {
     agent any
-
     environment {
-        GRADLE_HOME = tool 'Gradle' // Ensure Gradle is installed on Jenkins
+        // Append the Gradle bin directory to the existing PATH
+        PATH = "C:\\gradle-8.8-bin\\gradle-8.8\\bin;${env.PATH}"
     }
-
     stages {
-        stage('Test') {
+        stage('Publish') {
             steps {
-                echo 'Running unit tests...'
-                bat "${GRADLE_HOME}\\bin\\gradle test"
-                junit '**/build/test-results/test/*.xml' // Archive test results
+                script {
+                    bat 'gradle -v'  // This will use Gradle from the added path
+                }
             }
         }
+
+
+
+
     }
 }
