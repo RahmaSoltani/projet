@@ -7,7 +7,6 @@ pipeline {
         stage('Publish') {
             steps {
                 script {
-                    bat 'gradle publish'  // This will use Gradle from the added path
                 }
             }
         }
