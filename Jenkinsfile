@@ -11,8 +11,6 @@ pipeline {
             steps {
                 echo 'Running unit tests...'
                 bat 'gradle test'
-                junit '**/build/test-results/**/*.xml'
-                cucumber 'build/reports/cucumber/*.json'
             }
         }
 
