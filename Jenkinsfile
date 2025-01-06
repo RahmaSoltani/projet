@@ -4,7 +4,7 @@ pipeline {
         stage('Build') {
             steps {
                 script {
-                    bat 'gradle build'  // Use 'bat' for Windows
+                    bat './gradlew build'  // Use 'bat' for Windows
                 }
             }
         }
