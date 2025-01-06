@@ -28,6 +28,16 @@ pipeline {
 
 
 
+        stage('Deploy') {
+            steps {
+                echo 'Deploying to MyMavenRepo...'
+                sh """
+                ./gradlew publish \
+                -Dmymavenrepo.user=$MYMAVENREPO_USER \
+                -Dmymavenrepo.password=$MYMAVENREPO_PASS
+                """
+            }
+        }
 
         stage('Notification') {
             steps {
