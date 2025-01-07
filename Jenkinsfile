@@ -41,6 +41,16 @@ pipeline {
                 }
             }
         }
+                stage('Build') {
+                    steps {
+                        script {
+                            echo 'Running unit tests...'
+                            bat 'gradle build'
+
+                        }
+                    }
+                }
+
 
     }
 }
