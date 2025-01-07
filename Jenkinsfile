@@ -36,7 +36,6 @@ pipeline {
         stage('Quality Gate') {
                     steps {
                         script {
-                            // Step 2: Wait for SonarQube Quality Gate
                             def qualityGate = waitForQualityGate()
                             if (qualityGate.status != 'OK') {
                                 error "Quality Gate failed. Stopping pipeline."  // Fail the pipeline if Quality Gate fails
@@ -44,7 +43,7 @@ pipeline {
                         }
                     }
 
-
+        }
 
 
     }
