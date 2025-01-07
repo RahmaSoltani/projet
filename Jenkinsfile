@@ -28,7 +28,17 @@ pipeline {
                     // Archive cucumber report artifacts
                     archiveArtifacts artifacts: 'build/reports/cucumber/example-report.json', allowEmptyArchive: true
                 }
+
             }
+
         }
+         stage('Code Analysis') {
+                    steps {
+                        script {
+                            // Run SonarQube analysis
+                            bat 'gradle sonarqube -Dsonar.host.url=http://localhost:9000'
+                        }
+                    }
+                }
     }
 }
