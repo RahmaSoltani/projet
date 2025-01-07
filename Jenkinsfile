@@ -4,9 +4,9 @@ pipeline {
     environment {
         SONARQUBE_SERVER = 'sonarqube'  // The name of your SonarQube server configured in Jenkins
         PATH = "C:\\gradle-8.8-bin\\gradle-8.8\\bin;${env.PATH}"  // Ensure Gradle is in the PATH
-        MAVEN_REPO_URL = 'https://mymavenrepo.com/repo/wfeEoJVTqyCrSb3fpohC/'  // Your Maven repository URL credential ID
-        MAVEN_USERNAME = 'myMavenRepo' // Your Maven repository username credential ID
-        MAVEN_PASSWORD = '12345678'  // Your Maven repository password credential ID
+        MAVEN_REPO_URL = "${env.repoUrl}"  // URL of Maven repository
+        MAVEN_USERNAME = "${env.repoUser}"  // Username for Maven repository
+        MAVEN_PASSWORD = "${env.repoPassword}"  // Password for Maven repository
     }
 
     stages {
