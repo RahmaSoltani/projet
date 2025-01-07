@@ -17,8 +17,11 @@ pipeline {
                     echo 'Running unit tests...'
                     bat 'gradle clean test'
                     bat 'gradle jacocoTestReport'
+                    archiveArtifacts allowEmptyArchive: true, artifacts: 'build/reports/tests/test/*.xml', onlyIfSuccessful: true
+
+                    archiveArtifacts allowEmptyArchive: true, artifacts: 'build/reports/cucumber/*.html', onlyIfSuccessful: true
                     junit'**/build/test-results/test/*.xml'
-                   cucumber '**/reports/*.json'
+                    cucumber '**/reports/*.json'
 
                 }
             }
@@ -56,8 +59,7 @@ pipeline {
                     bat 'gradle build'
                     bat 'gradle jar'
                     bat 'gradle javadoc'
-                    bat 'javadoc -d build\\docs src\\*.java'
-                    archiveArtifacts allowEmptyArchive: true, artifacts: 'build/libs/*.jar, build/docs/**', onlyIfSuccessful: true
+                   // bat 'javadoc -d build\\docs src\\*.java'
                 }
             }
         }
