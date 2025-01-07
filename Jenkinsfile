@@ -11,7 +11,16 @@ pipeline {
 
     stages {
 
-        stage('SonarQube Analysis') {
+        stage('test') {
+            steps {
+                script {
+                    echo 'Running test...'
+                    bat 'gradle clean test'
+                    bat 'gradle jacocoTestReport'
+                }
+            }
+        }
+        stage('Code Analysis') {
             steps {
                 script {
                     echo 'Running SonarQube analysis...'
@@ -24,6 +33,16 @@ pipeline {
                 }
             }
         }
+        stage('Quality Gate') {
+                    steps {
+                        script {
+                            // Step 2: Wait for SonarQube Quality Gate
+                            def qualityGate = waitForQualityGate()
+                            if (qualityGate.status != 'OK') {
+                                error "Quality Gate failed. Stopping pipeline."  // Fail the pipeline if Quality Gate fails
+                            }
+                        }
+                    }
 
 
     }
