@@ -79,6 +79,16 @@ pipeline {
                 }
             }
         }
+                stage(' Notification') {
+                    steps {
+                        script {
+                            // Deploy the .jar to Maven repository
+                            //bat 'gradle  postPublishedPluginToSlack'
+                              bat 'gradle  sendMailCustom'
+
+                        }
+                    }
+                }
 
 
     }
