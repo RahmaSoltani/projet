@@ -59,7 +59,7 @@ pipeline {
                     bat 'gradle build'
                     bat 'gradle jar'
                     bat 'gradle javadoc'
-                   // bat 'javadoc -d build\\docs src\\*.java'
+                    archiveArtifacts allowEmptyArchive: true, artifacts: 'build/libs/*.jar', onlyIfSuccessful: true
                 }
             }
         }
