@@ -55,11 +55,23 @@ pipeline {
             }
         }
 
-        stage('Deploy to Maven Repository') {
+        stage('Build, Generate Docs, Archive and Deploy') {
             steps {
                 script {
-                    echo 'Deploying JAR to Maven repository...'
+                    echo 'Building the project, generating JAR file, documentation, and deploying...'
 
+                    // Step 1: Build the JAR file
+                    bat 'gradle clean build'  // Building project to create JAR file
+
+                    // Step 2: Generate Javadoc documentation
+                    bat 'gradle javadoc'  // Running Gradle to generate Javadoc
+
+                    // Step 3: Archive the JAR and documentation
+                    archiveArtifacts artifacts: 'build/libs/*.jar', allowEmptyArchive: true  // Archive JAR file
+                    archiveArtifacts artifacts: 'build/docs/javadoc/**', allowEmptyArchive: true  // Archive Javadoc
+
+                    // Step 4: Deploy JAR file to Maven repository
+                    echo 'Deploying JAR to Maven repository...'
                     withCredentials([usernamePassword(credentialsId: 'repoCredentials', usernameVariable: 'MAVEN_USERNAME', passwordVariable: 'MAVEN_PASSWORD')]) {
                         bat """
                         curl -u ${MAVEN_USERNAME}:${MAVEN_PASSWORD} -T build\\libs\\my-app.jar ${MAVEN_REPO_URL}
