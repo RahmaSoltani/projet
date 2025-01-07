@@ -18,7 +18,6 @@ pipeline {
                     bat 'gradle clean test'
                     bat 'gradle jacocoTestReport'
                     archiveArtifacts allowEmptyArchive: true, artifacts: 'build/reports/tests/test/*.xml', onlyIfSuccessful: true
-
                     archiveArtifacts allowEmptyArchive: true, artifacts: 'build/reports/cucumber/*.html', onlyIfSuccessful: true
                     junit'**/build/test-results/test/*.xml'
                     cucumber '**/reports/*.json'
@@ -63,7 +62,35 @@ pipeline {
                 }
             }
         }
+stage('Send Notification') {
+            steps {
+                script {
+                    def result = currentBuild.result ?: 'SUCCESS'
+                    if (result == 'SUCCESS') {
+                        mail to: 'lo_soltani@esi.dz',
+                             subject: "Jenkins Build #${env.BUILD_NUMBER} Success",
+                             body: "The build #${env.BUILD_NUMBER} was successful.\n\nCheck it out: ${env.BUILD_URL}"
+                    } else {
+                        mail to: 'lo_soltani@esi.dz',
+                             subject: "Jenkins Build #${env.BUILD_NUMBER} Failure",
+                             body: "The build #${env.BUILD_NUMBER} failed.\n\nCheck it out: ${env.BUILD_URL}"
+                    }
+                }
+            }
+        }
+    }
 
+    post {
+        always {
+            echo 'Pipeline execution finished.'
+        }
 
+        success {
+            echo 'Pipeline succeeded!'
+        }
+
+        failure {
+            echo 'Pipeline failed!'
+        }
     }
 }
