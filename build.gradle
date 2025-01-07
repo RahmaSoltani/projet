@@ -165,11 +165,9 @@ task sendMailCustom {
 sendMailCustom.mustRunAfter(publish)
 postPublishedPluginToSlack.mustRunAfter(publish)
 publish {
-    finalizedBy "postPublishedPluginToSlack","sendMailCustom"
 
 }
 
 tasks.named('publish').configure {
-    finalizedBy('test')
 }
 
