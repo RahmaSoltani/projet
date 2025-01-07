@@ -13,7 +13,7 @@ pipeline {
             steps {
                 script {
                     echo 'Running SonarQube analysis...'
-                    withSonarQubeEnv(SONARQUBE_SERVER) {
+                    withSonarQubeEnv('sonarqube') {
                         bat 'gradle sonarqube'
                     }
                 }
