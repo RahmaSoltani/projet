@@ -80,48 +80,5 @@ pipeline {
             }
         }
 
-        // Notification phase
-        stage('Notification') {
-            steps {
-                script {
-                    // Send success notification to Slack
-                    slackSend(channel: '#development', message: "Deployment successful for ${env.JOB_NAME} ${env.BUILD_NUMBER}.")
 
-                    // Send email notification
-                    sendEmailNotification()
-                }
-            }
-        }
     }
-
-    post {
-        always {
-            // Run the sendMail task regardless of pipeline success or failure
-            sendMailCustom()
-        }
-
-        success {
-            // Notify successful pipeline run via Slack
-            slackSend(channel: '#social', message: "Pipeline ${env.JOB_NAME} ${env.BUILD_NUMBER} completed successfully.")
-        }
-
-        failure {
-            // Notify failed pipeline run via Slack and send error email
-            slackSend(channel: '	#social', message: "Pipeline ${env.JOB_NAME} ${env.BUILD_NUMBER} failed.")
-            sendEmailFailureNotification()
-        }
-    }
-}
-
-// Custom Email notification function
-def sendEmailNotification() {
-    mail to: EMAIL_RECIPIENT,
-         subject: "Deployment Success - ${env.JOB_NAME} ${env.BUILD_NUMBER}",
-         body: "The deployment has been successfully completed for ${env.JOB_NAME} ${env.BUILD_NUMBER}."
-}
-
-def sendEmailFailureNotification() {
-    mail to: EMAIL_RECIPIENT,
-         subject: "Deployment Failure - ${env.JOB_NAME} ${env.BUILD_NUMBER}",
-         body: "The deployment has failed for ${env.JOB_NAME} ${env.BUILD_NUMBER}. Please check the Jenkins logs."
-}

@@ -61,7 +61,7 @@ publishing {
 }
 slack {
     publishedPlugin {
-        webHook = "https://hooks.slack.com/services/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"
+        webHook = "https://hooks.slack.com/services/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"
         attachment {
             fallback = "New version successfully published."
             pretext = "New version successfully published."
@@ -88,7 +88,7 @@ slack {
         }
     }
     buildSuccessful {
-        webHook = "https://hooks.slack.com/services/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"
+        webHook = "https://hooks.slack.com/services/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"
         attachment {
             fallback = "Project successfully built."
             pretext = "Project successfully built."
