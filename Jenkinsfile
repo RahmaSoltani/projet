@@ -34,7 +34,7 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 echo 'Running SonarQube analysis...'
-                withSonarQubeEnv('SonarQube') { // 'SonarQube' matches the Jenkins SonarQube server configuration name
+                withSonarQubeEnv('sonarqube') { // 'SonarQube' matches the Jenkins SonarQube server configuration name
                     sh 'gradle sonarqube -Dsonar.host.url=${SONARQUBE_URL}'
                 }
             }
@@ -69,7 +69,7 @@ pipeline {
                 }
             }
         }
-
+/*
         // Deploy phase
         stage('Deploy') {
             steps {
@@ -90,6 +90,8 @@ pipeline {
                     }
                 }
 
+*/
 
     }
+
 }
