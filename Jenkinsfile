@@ -8,12 +8,6 @@ pipeline {
     }
 
     stages {
-        stage('Build') {
-            steps {
-                echo 'Building the project...'
-                bat 'gradle build'
-            }
-        }
 
         stage('SonarQube Analysis') {
             steps {
