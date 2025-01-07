@@ -40,5 +40,30 @@ pipeline {
                         }
                     }
                 }
+                 // Code Quality phase
+                 stage('Code Quality') {
+                     steps {
+                         script {
+                             // Wait for quality gate to pass
+                             def qualityGateStatus = waitForQualityGate()
+                             if (qualityGateStatus.status != 'OK') {
+                                 error "Quality Gate failed. Pipeline stopping."
+                             }
+                         }
+                     }
+                 }
+            // Code Quality phase
+            stage('Code Quality') {
+                steps {
+                    script {
+                        // Wait for quality gate to pass
+                        def qualityGateStatus = waitForQualityGate()
+                        if (qualityGateStatus.status != 'OK') {
+                            error "Quality Gate failed. Pipeline stopping."
+                        }
+                    }
+                }
+            }
     }
+
 }
