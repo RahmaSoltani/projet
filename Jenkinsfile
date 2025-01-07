@@ -23,7 +23,7 @@ pipeline {
                     archiveArtifacts artifacts: '**/build/test-logs/*.xml', allowEmptyArchive: true
 
                     // Run cucumber reports generation
-                    bat 'gradle cucumberReports'
+                    bat "gradle jacocoTestReport"
 
                     // Archive cucumber report artifacts
                     archiveArtifacts artifacts: 'build/reports/cucumber/example-report.json', allowEmptyArchive: true

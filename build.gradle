@@ -33,7 +33,7 @@ cucumberReports {
 }
 
 test {
-    finalizedBy "jacocoTestReport",'sonar'
+
 
 }
 apply plugin: 'maven-publish'
@@ -168,6 +168,7 @@ publish {
     finalizedBy "postPublishedPluginToSlack","sendMailCustom"
 
 }
+
 tasks.named('publish').configure {
     finalizedBy('test')
 }
