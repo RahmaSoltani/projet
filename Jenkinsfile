@@ -4,6 +4,10 @@ pipeline {
     environment {
         SONARQUBE_SERVER = 'sonarqube'  // The name of your SonarQube server configured in Jenkins
         PATH = "C:\\gradle-8.8-bin\\gradle-8.8\\bin;${env.PATH}"  // Ensure Gradle is in the PATH
+         MAVEN_REPO_URL = credentials('repoUrl')
+         MAVEN_USERNAME = credentials('repoUser')
+         MAVEN_PASSWORD = credentials('repoPassword')
+
     }
 
     stages {
@@ -41,15 +45,27 @@ pipeline {
                 }
             }
         }
-                stage('Build') {
-                    steps {
-                        script {
-                            echo 'Running unit tests...'
-                            bat 'gradle build'
+        stage('Build') {
+             steps {
+                  script {
+                      echo 'Running unit tests...'
+                      bat 'gradle build'
 
-                        }
-                    }
+                  }
+             }
+        }
+        stage('Deploy to Maven Repository') {
+            steps {
+                script {
+                    // Use curl to upload the JAR file to your Maven repository
+                    echo 'Deploying JAR to Maven repository...'
+                    bat """
+                    curl -u ${MAVEN_USERNAME}:${MAVEN_PASSWORD} -T build\\my-app.jar ${MAVEN_REPO_URL}
+                    """
                 }
+            }
+        }
+
 
 
     }
