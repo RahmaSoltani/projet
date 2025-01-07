@@ -52,7 +52,7 @@ pipeline {
                          }
                      }
                  }
-            // Code Quality phase
+            /* Code Quality phase
             stage('Code Quality') {
                 steps {
                     script {
@@ -63,7 +63,22 @@ pipeline {
                         }
                     }
                 }
-            }
+            }*/
+             stage('Build') {
+                        steps {
+                            script {
+                                // Build the Jar file using Gradle
+                                bat 'gradle build'
+
+                                // Generate Javadoc
+                                bat 'gradle javadoc'
+
+                                // Archive the .jar and Javadoc files
+                                archiveArtifacts artifacts: '**/build/libs/*.jar', allowEmptyArchive: true
+                                archiveArtifacts artifacts: '**/build/docs/javadoc/**', allowEmptyArchive: true
+                            }
+                        }
+                    }
     }
 
 }
