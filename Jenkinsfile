@@ -36,7 +36,7 @@ pipeline {
                     steps {
                         script {
                             // Run SonarQube analysis
-                            bat 'gradle sonarqube -Dsonar.host.url=http://localhost:9000'
+                            bat 'gradle sonarqube -Dsonar.host.url=http://197.140.142.82:9000/'
                         }
                     }
                 }
