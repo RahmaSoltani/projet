@@ -67,11 +67,11 @@ stage('Send Notification') {
                 script {
                     def result = currentBuild.result ?: 'SUCCESS'
                     if (result == 'SUCCESS') {
-                        mail to: 'lo_soltani@esi.dz',
+                        mail to: 'lr_soltani@esi.dz',
                              subject: "Jenkins Build #${env.BUILD_NUMBER} Success",
                              body: "The build #${env.BUILD_NUMBER} was successful.\n\nCheck it out: ${env.BUILD_URL}"
                     } else {
-                        mail to: 'lo_soltani@esi.dz',
+                        mail to: 'lr_soltani@esi.dz',
                              subject: "Jenkins Build #${env.BUILD_NUMBER} Failure",
                              body: "The build #${env.BUILD_NUMBER} failed.\n\nCheck it out: ${env.BUILD_URL}"
                     }
