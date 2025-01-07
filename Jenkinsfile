@@ -52,31 +52,7 @@ pipeline {
                          }
                      }
                  }
-            /* Code Quality phase
-            stage('Code Quality') {
-                steps {
-                    script {
-                        // Wait for quality gate to pass
-                        def qualityGateStatus = waitForQualityGate()
-                        if (qualityGateStatus.status != 'OK') {
-                            error "Quality Gate failed. Pipeline stopping."
-                        }
-                    }
-                }
-            }*/
-             stage('Build') {
-                        steps {
-                            script {
-                                // Build the Jar file using Gradle
-                                bat 'gradle build'
 
-                                // Generate Javadoc
-                                bat 'gradle javadoc'
-
-                                // Archive the .jar and Javadoc files
-                            }
-                        }
-                    }
     }
 
 }
