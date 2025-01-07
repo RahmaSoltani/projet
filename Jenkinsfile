@@ -66,6 +66,15 @@ stage('Send Notification') {
             steps {
                 script {
                     def result = currentBuild.result ?: 'SUCCESS'
+
+                    // Send Slack notification
+                    if (result == 'SUCCESS') {
+                        slackSend(channel: env.SLACK_CHANNEL, color: 'good', message: "Build #${env.BUILD_NUMBER} was successful! :tada:\nCheck it out: ${env.BUILD_URL}")
+                    } else {
+                        slackSend(channel: env.SLACK_CHANNEL, color: 'danger', message: "Build #${env.BUILD_NUMBER} failed! :x:\nCheck it out: ${env.BUILD_URL}")
+                    }
+
+                    // Send email notification
                     if (result == 'SUCCESS') {
                         mail to: 'lr_soltani@esi.dz',
                              subject: "Jenkins Build #${env.BUILD_NUMBER} Success",
