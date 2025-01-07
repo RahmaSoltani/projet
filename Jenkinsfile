@@ -4,9 +4,9 @@ pipeline {
     environment {
         SONARQUBE_SERVER = 'sonarqube'  // The name of your SonarQube server configured in Jenkins
         PATH = "C:\\gradle-8.8-bin\\gradle-8.8\\bin;${env.PATH}"  // Ensure Gradle is in the PATH
-        MAVEN_REPO_URL = credentials('repoUrl')  // Your Maven repository URL credential ID
-        MAVEN_USERNAME = credentials('repoUser')  // Your Maven repository username credential ID
-        MAVEN_PASSWORD = credentials('repoPassword')  // Your Maven repository password credential ID
+        MAVEN_REPO_URL = 'https://mymavenrepo.com/repo/wfeEoJVTqyCrSb3fpohC/'  // Your Maven repository URL credential ID
+        MAVEN_USERNAME = 'myMavenRepo' // Your Maven repository username credential ID
+        MAVEN_PASSWORD = '12345678'  // Your Maven repository password credential ID
     }
 
     stages {
@@ -49,7 +49,8 @@ pipeline {
             steps {
                 script {
                     echo 'Building the project...'
-                    bat 'gradle build'  // Running Gradle build task to compile and create the JAR file
+
+                    bat 'gradle build'
                 }
             }
         }
@@ -59,9 +60,7 @@ pipeline {
                 script {
                     echo 'Deploying JAR to Maven repository...'
 
-                    // Use withCredentials to handle credentials securely
                     withCredentials([usernamePassword(credentialsId: 'repoCredentials', usernameVariable: 'MAVEN_USERNAME', passwordVariable: 'MAVEN_PASSWORD')]) {
-                        // Upload the generated JAR file using curl
                         bat """
                         curl -u ${MAVEN_USERNAME}:${MAVEN_PASSWORD} -T build\\libs\\my-app.jar ${MAVEN_REPO_URL}
                         """
