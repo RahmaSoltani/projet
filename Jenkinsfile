@@ -31,11 +31,11 @@ pipeline {
         }
 
         // Code Analysis phase
-        stage('Code Analysis') {
+        stage('SonarQube Analysis') {
             steps {
-                script {
-                    // Run SonarQube analysis
-                    bat 'gradle sonarqube -Dsonar.host.url=http://197.140.142.82:9000/'
+                echo 'Running SonarQube analysis...'
+                withSonarQubeEnv('SonarQube') { // 'SonarQube' matches the Jenkins SonarQube server configuration name
+                    sh 'gradle sonarqube -Dsonar.host.url=${SONARQUBE_URL}'
                 }
             }
         }
