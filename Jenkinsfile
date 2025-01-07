@@ -15,8 +15,11 @@ pipeline {
             steps {
                 script {
                     echo 'Running unit tests...'
-                    bat 'gradle clean test'  // Running unit tests with Gradle
-                    bat 'gradle jacocoTestReport'  // Generating Jacoco test coverage report
+                    bat 'gradle clean test'
+                    bat 'gradle jacocoTestReport'
+                    junit'**/build/test-results/test/*.xml'
+                   cucumber '**/reports/*.json'
+
                 }
             }
         }
@@ -51,20 +54,12 @@ pipeline {
                     echo 'Building the project...'
 
                     bat 'gradle build'
+                    bat 'gradle jar'
+
                 }
             }
         }
 
-        stage('Deploy to Maven Repository') {
-                   steps {
-                       script {
-                           echo 'Deploying JAR to Maven repository...'
 
-                           bat """
-                           curl -u ${MAVEN_USERNAME}:${MAVEN_PASSWORD} -T build\\libs\\my-app.jar ${MAVEN_REPO_URL}
-                           """
-                       }
-                   }
-               }
     }
 }
